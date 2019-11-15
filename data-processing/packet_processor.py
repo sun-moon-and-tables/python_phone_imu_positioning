@@ -54,3 +54,4 @@ for i in range(len(gravPacketsTogether)):
     gravPackets.append([int(gravPacketsTogether[i][0]), np.array([float(gravPacketsTogether[i][1]), float(gravPacketsTogether[i][2]), float(gravPacketsTogether[i][3]) ]) ] )
 
 #classifies the strings of values: time, x value, y value, z value, as floats or ints, and stores them as a final list.
+inputFile.close()
