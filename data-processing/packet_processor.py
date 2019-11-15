@@ -1,6 +1,6 @@
 import re as regex
 import numpy as np
-inputFile = open("stationery_14_11_james_GV1_1_T30.csv","r")
+inputFile = open("stationery_14_11_james_GV1_3_T30.csv","r")
 fileContents = inputFile.read()
 #read in the file contents, currently this needs to be typed in, as its generally faster than a GUI.
 
@@ -49,8 +49,8 @@ for i in range(len(gravPacketsWithText)):
 accPackets = []
 gravPackets = []
 for i in range(len(accPacketsTogether)):
-    accPackets.append([int(accPacketsTogether[i][0]), float(accPacketsTogether[i][1]), float(accPacketsTogether[i][2]), float(accPacketsTogether[i][3])] )
+    accPackets.append([int(accPacketsTogether[i][0]), np.array([float(accPacketsTogether[i][1]), float(accPacketsTogether[i][2]), float(accPacketsTogether[i][3]) ]) ])
 for i in range(len(gravPacketsTogether)):
-    gravPackets.append([int(gravPacketsTogether[i][0]), float(gravPacketsTogether[i][1]), float(gravPacketsTogether[i][2]), float(gravPacketsTogether[i][3])] )
+    gravPackets.append([int(gravPacketsTogether[i][0]), np.array([float(gravPacketsTogether[i][1]), float(gravPacketsTogether[i][2]), float(gravPacketsTogether[i][3]) ]) ] )
 
 #classifies the strings of values: time, x value, y value, z value, as floats or ints, and stores them as a final list.
