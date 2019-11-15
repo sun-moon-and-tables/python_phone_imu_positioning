@@ -21,7 +21,7 @@ differenceInGravBetweenPackets = []
 changeInGravValue = np.zeros(3)
 syncedGrav = np.zeros(3)
 firstGravValue = np.zeros(3)
-# note see john's notes for the explanations, this is basically the gradient we'll be using kinda. just. shut up.
+# note see john's notes for the explanations, this is basically the gradient we'll be using kinda.
 for i in range(len(gravPackets)):
 
     for j in range(len(correctedAccPackets)):
