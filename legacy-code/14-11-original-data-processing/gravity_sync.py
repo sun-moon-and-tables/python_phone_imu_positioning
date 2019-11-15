@@ -36,7 +36,7 @@ for j in range(len(timesOfAcc)):
         timesOfAcc.pop(-1)
         correctedAccPackets.pop(-1)
 
-# we now have the acceleration list shortened so that we can fucking work with it.
+# we now have the acceleration list shortened so that we can work with it.
 
 correctedGravPackets = []
 
@@ -51,7 +51,7 @@ corGravX = 0.0
 corGravY = 0.0
 corGravZ = 0.0
 
-# note see john's notes for the explanations, this is basically the gradient we'll be using kinda. just. shut up.
+# note see john's notes for the explanations, this is basically the gradient we'll be using kinda.
 for i in range(len(timesOfGrav)):
 
     for j in range(len(timesOfAcc)):
