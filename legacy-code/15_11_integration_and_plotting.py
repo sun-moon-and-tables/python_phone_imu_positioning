@@ -1,3 +1,8 @@
+"""
+This file is the modified integration file that uses arrays and is in general more tidy than before
+Does not contain the animation and hence is legacy, in case of emergency
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from grav_sync_with_acc import correctedAccPackets
