@@ -5,9 +5,6 @@ from grav_sync_with_acc import syncedGravPackets
 
 
 accWithoutGrav = []
-tempX = 0.0
-tempY = 0.0
-tempZ = 0.0
 
 for i in range(len(correctedAccPackets)):
     correctedAccPackets[i][0] = correctedAccPackets[i][0]/1000
@@ -16,10 +13,6 @@ for i in range(len(correctedAccPackets)):
 for i in range(len(correctedAccPackets)):
     accWithoutGrav.append(correctedAccPackets[i][1] - syncedGravPackets[i][1])
     #soure for correct np array!! https://stackoverflow.com/a/48343452
-
-currentPositionX = 0.0
-currentPositionY = 0.0
-currentPositionZ = 0.0
 
 velocityVector = []
 postionVector = []
@@ -95,10 +88,3 @@ plt.ylabel('position in xyz')
 plt.title('Position over time.')
 plt.legend(loc = 1)
 plt.show()
-
-for i in range(len(syncedGravPackets)):
-    if syncedGravPackets[i][1][2] < 8:
-        print(syncedGravPackets[i], i, 'synced grav packets less than 8 in z')
-for i in range(len(accWithoutGrav)):
-    if accWithoutGrav[i][2] > 6:
-        print(accWithoutGrav[i], i, 'acceleration without gravity greater than 6 in z')
