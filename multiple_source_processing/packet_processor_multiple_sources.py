@@ -1,12 +1,6 @@
 import re as regex
 import numpy as np
-"""
-IMPORTANT NOTE:
-THE WHILE LOOP THAT ACCEPTS FILES NEEDS SOME TWEAKS, AS 'y' DOES NOT SEEM TO WORK AS 'Y'.
-IN ADDITION, THERE NEEDS TO BE A WAY TO ESCAPE THE SECTION OF THE LOOP IF A USER MAKES A MISTAKE AND WANTS TO LEAVE IT
-WITHOUT ENTERING A NEW FILE.
-THIS CLASS IS TO BE RUN INSIDE OF main.py
-"""
+
 class packet_processor:
     """
     This class processes the packets that are supplied in each recorded data set.
