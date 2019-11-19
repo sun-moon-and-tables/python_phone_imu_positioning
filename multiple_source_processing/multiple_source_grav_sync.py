@@ -3,51 +3,12 @@ import copy
 import numpy as np
 
 
-"""
-correctedAccPackets = accPackets.copy()
-
-for j in range(len(accPackets)):
-    if correctedAccPackets[0][0] < gravPackets[0][0]:
-        correctedAccPackets.pop(0)
-    elif correctedAccPackets[-1][0] > gravPackets[-1][0]:
-        correctedAccPackets.pop(-1)
-    else:
-        break
-
-syncedGravPackets = []
-
-largeDeltaT = 0
-smallDeltaT = 0
-differenceInGravBetweenPackets = []
-changeInGravValue = np.zeros(3)
-syncedGrav = np.zeros(3)
-firstGravValue = np.zeros(3)
-# note see john's notes for the explanations, this is basically the gradient we'll be using kinda.
-for i in range(len(gravPackets)):
-
-    for j in range(len(correctedAccPackets)):
-
-        if gravPackets[i][0] == correctedAccPackets[j][0]:
-            syncedGravPackets.append([correctedAccPackets[j][0], np.array([gravPackets[i][1][0], gravPackets[i][1][1], gravPackets[i][1][2] ]) ])
-            break
-        elif (gravPackets[i][0] > correctedAccPackets[j][0]) and (gravPackets[i-1][0] < correctedAccPackets[j][0]):
-            smallDeltaT = correctedAccPackets[j][0] - gravPackets[i-1][0]
-            largeDeltaT = gravPackets[i][0] - gravPackets[i-1][0]
-            changeInGravValue = gravPackets[i][1] - gravPackets[i-1][1]
-            syncedGrav = (smallDeltaT/largeDeltaT)*changeInGravValue + gravPackets[i-1][1]
-            syncedGravPackets.append([correctedAccPackets[j][0], np.around(syncedGrav, 3)])
-            break
-
-#np.around is used to round the synced value to 3 decimal places: https://stackoverflow.com/a/46994452
-"""
-
-
 class data_source_sync:
     """
     This class will have two functions. First will sync all the grav data and acc data. 
     Second function will do the grav synced with the acceleration data.
     """
-
+    
     def __init__(self, fileList):
         """
         """
@@ -56,6 +17,9 @@ class data_source_sync:
     def dataSynchroniser(self):
         
         firstList = []
+        
+        gravMaster = []
+        accMaster = []
 
         for m in range(1):
             #this makes sure that we perform the function separately for the grav and acc packets that we have
@@ -84,26 +48,22 @@ class data_source_sync:
                 """
                 FOR THE VERY, VERY FIRST BIT, IN THE RANGE(1) AREA WE HAVE:
                 firstList = copy.deepcopy(self.fileList[0][m])
-
                 WE START WITH
                 and by clearing out master; master = []
                 and clearing our firstListImproved; firstListImproved = []
-
                 WE WILL END WITH
                 firstList = copy.deepcopy(master)
-
                 AND ONCE THE RANGE(1) SECTION HAS BEEN COMPLETED, WE DO:
                 if gravityOrAcceleration = 0 (grav packets), 
                 gravMaster = copy.deepcopy(master)
                 if gravityOrAcceleration = 1 (acc packets),
                 accMaster = copy.deepcopy(master)
-
                 """
                 master = [] #these need to be here!!
                 firstListImproved = [] #me too! ^ see above!
 
-                largeDeltaT = 0
-                smallDeltaT = 0
+                largeDeltaT = 0.0
+                smallDeltaT = 0.0
                 changeInFirstListValue = np.zeros(3)
                 intermediateFirstListValue = np.zeros(3)
 
@@ -139,7 +99,7 @@ class data_source_sync:
                             firstListImproved.append([ self.fileList[r+1][m][j][0], firstList[i][1] ])
                             break
 
-                        elif ( firstList[i-1][0] < self.fileList[r+1][m][j][0] ) and ( firstList[i][time] > self.fileList[r+1][m][j][time] ):
+                        elif ( firstList[i-1][0] < self.fileList[r+1][m][j][0] ) and ( firstList[i][0] > self.fileList[r+1][m][j][0] ):
                             
                             smallDeltaT = self.fileList[r+1][m][j][0] - firstList[i-1][0]
                             largeDeltaT = firstList[i][0] - firstList[i-1][0]
@@ -149,13 +109,14 @@ class data_source_sync:
                             break
 
                         p += 1
-                        elif p == len(self.fileList[r+1][m]): #I can't see why this line is yielding a syntax error.
+                        if p == len(self.fileList[r+1][m]): #I can't see why this line is yielding a syntax error.
                             firstListImproved.append(firstList[i])
                             break
+                        else:
+                            continue
                 """
                 Now that we have made the firstListImproved, where we have some original packets that were recording when sensor 2 wasn't on, and lots more averaged
                 packets, where we found the intermediate value between two sensor results.. we can now start taking a mean.
-
                 The first for loop compares the firstListImproved against the secondList, now that the times have been synced, we can begin to take a mean of the two lists 
                 of the same type of data.
                 Once again, we check if a value is not matched in the secondList by the firstListImproved, and if that is the case, we append that value to the master.
@@ -171,9 +132,11 @@ class data_source_sync:
                             break
 
                         t += 1
-                        elif t == (len(self.fileList[r+1][m])) :
+                        if t == (len(self.fileList[r+1][m])) :
                             master.append( firstListImproved[i] )
                             break
+                        else:
+                            continue
                 """
                 This second loop is now to check that we have all the unmatched values in the secondList too, where there is data for the secondList and there isn't in the firstList
                 for example if the sensor 2 recorded for 6 seconds after sensor 1 switched off, we need to save that data too, no sense in it going to waste.
@@ -186,13 +149,14 @@ class data_source_sync:
                             break
 
                         u += 1
-                        elif s == (len(firstListImproved)):
+                        if u == (len(firstListImproved)):
                             master.append(self.fileList[r+1][m][j])
                             break
+                        else:
+                            continue
 
                 firstList = copy.deepcopy(master)
-
-
+            
             if gravityOrAcceleration == 0:
                 gravMaster = copy.deepcopy(master)
                 gravityOrAcceleration += 1
@@ -200,16 +164,49 @@ class data_source_sync:
             if gravityOrAcceleration == 1:
                 accMaster = copy.deepcopy(master)
                 continue
+            else:
+                continue
+            
+        self.gravMaster = gravMaster
+        self.accMaster = accMaster
+            
+        #source for calling variables: https://stackoverflow.com/a/10139935
 
 
+    def syncGravWithAcc(self):
+        
+        gravMasterSynced = []
+            
+        for j in range(len(self.accMaster)):
+            if self.accMaster[0][0] < self.gravMaster[0][0]:
+                self.accMaster.pop(0)
+            elif self.accMaster[-1][0] > self.gravMaster[-1][0]:
+                self.accMaster.pop(-1)
+            else:
+                break
 
-    def syncGravWithAcc(self, gravMaster, accMaster):
-
-
-
-
-
-
-
-
-
+        largeDeltaT = 0.0
+        smallDeltaT = 0.0
+        changeInGravValue = np.zeros(3)
+        syncedGrav = np.zeros(3)
+        # note see john's notes for the explanations, this is basically the gradient we'll be using kinda.
+        for i in range(len(self.gravMaster)):
+        
+            for j in range(len(self.accMaster)):
+        
+                if self.gravMaster[i][0] == self.accMaster[j][0]:
+                    gravMasterSynced.append([self.accMaster[j][0], np.array([self.gravMaster[i][1][0], self.gravMaster[i][1][1], self.gravMaster[i][1][2] ]) ])
+                    break
+                
+                elif (self.gravMaster[i][0] > self.accMaster[j][0]) and (self.gravMaster[i-1][0] < self.accMaster[j][0]):
+                    smallDeltaT = self.accMaster[j][0] - self.gravMaster[i-1][0]
+                    largeDeltaT = self.gravMaster[i][0] - self.gravMaster[i-1][0]
+                    changeInGravValue = self.gravMaster[i][1] - self.gravMaster[i-1][1]
+                    syncedGrav = (smallDeltaT/largeDeltaT)*changeInGravValue + self.gravMaster[i-1][1]
+                    gravMasterSynced.append([self.accMaster[j][0], np.around(syncedGrav, 3)])
+                    break
+                
+        allData = [gravMasterSynced, self.accMaster]
+        return allData
+        
+        #np.around is used to round the synced value to 3 decimal places: https://stackoverflow.com/a/46994452
