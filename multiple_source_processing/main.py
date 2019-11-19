@@ -1,5 +1,7 @@
 import numpy as np
 from packet_processor_multiple_sources import packet_processor
+from multiple_source_grav_sync import data_source_sync 
+from integration_and_plotting import integration_and_plot
 
 listOfFilesToBeProcessed = []
 print('Enter the filenames of the programs that you wish to process. \nIf they are in the same folder as this program, just enter the filename. \nIf they are in another folder, use the complete file path.')   
@@ -32,7 +34,12 @@ for file in listOfFilesToBeProcessed:
     data = np.load("Processed--%s.npy"%(file))
     allData.append(data)
 
-print(len(allData[0][0]))
+syncgrav = data_source_sync(allData)
+syncgrav.dataSynchroniser()
+plot = integration_and_plot(syncgrav.syncGravWithAcc())
+plot.integration()
+plot.plotting()
+
 
 
 
@@ -44,5 +51,3 @@ print(len(allData[0][0]))
 #allData[][][][i], choice of 0 or 1, where 0 is the epoch time data and 1 is the grav/acc x,y,z array of values.
 #allData[][][][1][i], after choosing 1, choice of 0,1,2 to select either the x, y or z data from the packet
 #example: print(allData[0][0][0][1][0])
-
-
