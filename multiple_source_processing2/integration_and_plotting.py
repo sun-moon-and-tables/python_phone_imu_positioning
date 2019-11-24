@@ -17,16 +17,24 @@ class integration_and_plot:
     
     def integration(self):
         
+        #print(self.inputData[0], 'gravMaster\n\n\n\n', self.inputData[1], 'accMaster\n\n\n\n')
+
+
         accWithoutGrav = []
         
-        accMaster = copy.deepcopy(self.inputData[0])
-        gravMaster = copy.deepcopy(self.inputData[1])
-        
-        for i in range(len(accMaster)):
-            accMaster[i][0] = accMaster[i][0]/1000
-        
+        gravMaster = copy.deepcopy(self.inputData[0])
+        accMaster = copy.deepcopy(self.inputData[1])
+        #print(accMaster, '\n\n')
+        #print(gravMaster)
+        """
+        currently we are seeing different lengths of accMaster and gravMaster, which SHOULD NOT BE ALLOWED, if they have been processed through grav sync.
+        Is this the multiple packet error, or something similar? (multiple packet error in packet_processor)
+        print(len(accMaster))
+        print(len(gravMaster))
+        """
         for i in range(len(accMaster)):
             accWithoutGrav.append(accMaster[i][1] - gravMaster[i][1])
+            #print(accMaster[i][1], '\n', gravMaster[i][1], '\n', accWithoutGrav[i])
             #soure for correct np array!! https://stackoverflow.com/a/48343452
         
         velocityVector = []
@@ -35,14 +43,14 @@ class integration_and_plot:
         timesOfAcc = []
         
         for i in range(len(accMaster)):
-            timesOfAcc.append(accMaster[i][0])
+            timesOfAcc.append( accMaster[i][0]/1000 )
         
-        print(timesOfAcc, 'times of acc')
-        print(accWithoutGrav, 'acc without grav')
-        print(accMaster, 'accMaster')
+        #print(timesOfAcc, 'times of acc')
+        #print(accWithoutGrav, 'acc without grav')
+        #print(accMaster, 'accMaster')
         tempVelocity = np.zeros(3)
         for i in range(len(accWithoutGrav) - 1):
-            tempVelocity = tempVelocity + (accWithoutGrav[i+1] + accWithoutGrav[i])*(timesOfAcc[i+1][0] - timesOfAcc[i][0])*0.5
+            tempVelocity = tempVelocity + (accWithoutGrav[i+1] + accWithoutGrav[i])*(timesOfAcc[i+1] - timesOfAcc[i])*0.5
             velocityVector.append(tempVelocity)
         
         timesOfVel = copy.deepcopy(timesOfAcc)
@@ -141,7 +149,7 @@ class integration_and_plot:
             line.set_3d_properties(data[2, :num])
         
         data = np.array(list(gen())).T
-        line, = ax.plot(data[0, 0:1], data[1, 0:1], data[2, 0:1])
+        line, = ax.plot(data[0, 0:1], data[1, 0:1], data[2, 0:1]) #nope, no error here.
         
         #Setting the axes properties
         ax.set_xlim3d([-2, 2])
@@ -154,7 +162,17 @@ class integration_and_plot:
         ax.set_zlabel('Z')
         
         ani = animation.FuncAnimation(fig, update, len(self.timesOfPos), fargs=(data, line), interval=1, blit=False)
-        #ani.save('matplot003.gif', writer='imagemagick')
+        #ani.save('matplot003.mp4', writer='ffmpeg')
         plt.show()
         
         #source: https://stackoverflow.com/a/38121759
+
+        #23/11 more animation guidance: https://stackoverflow.com/a/28077104
+        #change of animation writer to ffmpeg, can only be done on machines that can install software: https://stackoverflow.com/a/31193532
+
+        #and in the comments of that:
+        """
+        If saving as video instead of .gif then ani.save('test.mp4', writer='ffmpeg', codec='h264') should replace the last line. 
+        If you want to find out which codecs are available then run ffmpeg -codec in the terminal. 
+        Given that you want to use ffmpeg as the writer. 
+        """
