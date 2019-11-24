@@ -1,9 +1,4 @@
-This folder contains the current software for processing IMU gravity (that's from a virtual sensor) and accelerometer data.
-The app to send the data is not on GitHub currently, but is saved to the Lancaster Box.
-To run this hodge podge of programs:
-1) run the packet processor
-2) run the gravity sync
-3) run the integration and plotting
-
-The packet processor program requires the input of a .csv test data file, which you'll have to save using the app and ncat.
-You'll need to specify the location of the .csv file.
+Run main.py to process the data from your sensors.
+By default, main.py will use the timeclear data processing method, as the sensors are assumed to be out of sync in time.
+If the sensors are synced in time accurately, then make changes to main.py before you run it to use the regular data processing file.
+This will use standard timestamps, rather than the zeroed timestamps.
