@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.time.*;
 
 public class MainActivity extends Activity {
     private static final int EVENT_MEAN_COUNT = 100;
@@ -76,15 +77,27 @@ public class MainActivity extends Activity {
 
     class SensorData implements SensorEventListener {
         private Sensor magneticFieldSensor;
+        private Sensor accelerometerSensor;
+        private Sensor gyroscopeSensor;
+        private Sensor gravitySensor;
 
         private SensorData() {
             this.magneticFieldSensor = sensorManager.getDefaultSensor(
                     Sensor.TYPE_MAGNETIC_FIELD);
+            this.accelerometerSensor = sensorManager.getDefaultSensor(
+                    Sensor.TYPE_ACCELEROMETER);
+            this.gyroscopeSensor = sensorManager.getDefaultSensor(
+                    Sensor.TYPE_GYROSCOPE);
+            this.gravitySensor = sensorManager.getDefaultSensor(
+                    Sensor.TYPE_GRAVITY);
         }
 
         public void start() {
             // Enable the sensor when the activity is started, refreshing every 10ms.
             sensorManager.registerListener(this,  magneticFieldSensor, 10000);
+            sensorManager.registerListener(this, accelerometerSensor, 10000);
+            sensorManager.registerListener(this, gyroscopeSensor, 10000);
+            sensorManager.registerListener(this, gravitySensor, 10000);
         }
 
         private void stop() {
@@ -97,18 +110,16 @@ public class MainActivity extends Activity {
             // That is, set the current text to this value, as well as altering the
             // text colour depending on the value of the event.
 
-            if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
-                TextView xMagneticField = findViewById(R.id.currentMagneticFieldX);
-                TextView yMagneticField = findViewById(R.id.currentMagneticFieldY);
-                TextView zMagneticField = findViewById(R.id.currentMagneticFieldZ);
 
-                float currentXValue = event.values[0];
-                float currentYValue = event.values[1];
-                float currentZValue = event.values[2];
+            if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 
-                events.xEvents.add(currentXValue);
-                events.yEvents.add(currentYValue);
-                events.zEvents.add(currentZValue);
+                float currentAccXValue = event.values[0];
+                float currentAccYValue = event.values[1];
+                float currentAccZValue = event.values[2];
+
+                events.xEvents.add(currentAccXValue);
+                events.yEvents.add(currentAccYValue);
+                events.zEvents.add(currentAccZValue);
                 currentEvent = currentEvent + 1;
 
                 if (currentEvent == EVENT_MEAN_COUNT - 1) {
@@ -119,15 +130,13 @@ public class MainActivity extends Activity {
                     this.updateDeviations();
                 }
 
-                setSensorText(xMagneticField, currentXValue, means[0],standard_deviations[0]);
-                setSensorText(yMagneticField, currentYValue, means[1],standard_deviations[1]);
-                setSensorText(zMagneticField, currentZValue, means[2],standard_deviations[2]);
-
                 if (logger != null) {
+                    String timeStampMillis = Long.toString(System.currentTimeMillis());
                     new LoggingUtil(logger).execute(
-                            "X", String.format(Locale.getDefault(), "%.3f", currentXValue),
-                            "Y", String.format(Locale.getDefault(), "%.3f", currentYValue),
-                            "Z", String.format(Locale.getDefault(), "%.3f", currentZValue)
+                            "EpochTime", timeStampMillis,
+                            "AccX", String.format(Locale.getDefault(), "%.3f", currentAccXValue),
+                            "AccY", String.format(Locale.getDefault(), "%.3f", currentAccYValue),
+                            "AccZ", String.format(Locale.getDefault(), "%.3f", currentAccZValue)
                     );
                 } else {
                     TextView apiLabel = findViewById(R.id.apiText);
@@ -135,6 +144,38 @@ public class MainActivity extends Activity {
                 }
             }
 
+            if (event.sensor.getType() == Sensor.TYPE_GRAVITY) {
+
+                float currentGravXValue = event.values[0];
+                float currentGravYValue = event.values[1];
+                float currentGravZValue = event.values[2];
+
+                events.xEvents.add(currentGravXValue);
+                events.yEvents.add(currentGravYValue);
+                events.zEvents.add(currentGravZValue);
+                currentEvent = currentEvent + 1;
+
+                if (currentEvent == EVENT_MEAN_COUNT - 1) {
+                    this.getMeans();
+                    this.getStandardDeviations();
+                } else if (currentEvent % (EVENT_MEAN_COUNT * 15)== 0) {
+                    this.updateMeans();
+                    this.updateDeviations();
+                }
+
+                if (logger != null) {
+                    String timeStampMillis = Long.toString(System.currentTimeMillis());
+                    new LoggingUtil(logger).execute(
+                            "EpochTime", timeStampMillis,
+                            "GravX", String.format(Locale.getDefault(), "%.3f", currentGravXValue),
+                            "GravY", String.format(Locale.getDefault(), "%.3f", currentGravYValue),
+                            "GravZ", String.format(Locale.getDefault(), "%.3f", currentGravZValue)
+                    );
+                } else {
+                    TextView apiLabel = findViewById(R.id.apiText);
+                    apiLabel.setTextColor(getResources().getColor(R.color.black));
+                }
+            }
             if (currentAccuracy == 0) {
                 currentAccuracy = event.accuracy;
                 updateAccuracyText();
@@ -152,7 +193,7 @@ public class MainActivity extends Activity {
             boolean medianNotSet = Float.compare(Math.abs(mean), 0) == 0;
             boolean insideRange = (
                     (currentValue >= mean - (deviation * 10)) &&
-                    (currentValue <= mean + (deviation * 10))
+                            (currentValue <= mean + (deviation * 10))
             );
             boolean outsideSafeRange = currentValue >= MAX_LIMIT || currentValue <= MIN_LIMIT;
 
@@ -233,7 +274,7 @@ public class MainActivity extends Activity {
                 float newEvent = events.get(axis).get(events.get(axis).size() - 1);
                 updatedDeviations[axis] = (float)Math.sqrt((
                         (1 - RATE_OF_CHANGE) * Math.pow(standard_deviations[axis], 2) +
-                        RATE_OF_CHANGE * Math.pow(newEvent - means[axis], 2)
+                                RATE_OF_CHANGE * Math.pow(newEvent - means[axis], 2)
                 ));
             }
 
@@ -252,8 +293,8 @@ public class MainActivity extends Activity {
         protected Void doInBackground(String... args) {
             String toLog = String.format(
                     Locale.getDefault(),
-                    "%s:%s;%s:%s;%s:%s",
-                    args[0], args[1], args[2], args[3], args[4], args[5]
+                    "%s:%s;%s:%s;%s:%s;%s:%s",
+                    args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7]
             );
             logDataToServer(toLog);
 
@@ -277,7 +318,7 @@ public class MainActivity extends Activity {
         @Override
         protected PrintWriter doInBackground(Void... args) {
             try {
-                this.loggingSocket = new Socket("10.32.102.11", 5005);
+                this.loggingSocket = new Socket("192.168.137.1", 5006);
                 this.loggingWriter = new PrintWriter(loggingSocket.getOutputStream());
             } catch (IOException e) {
                 e.printStackTrace();
