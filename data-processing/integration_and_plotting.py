@@ -82,6 +82,7 @@ class integration_and_plot:
         plt.ylabel('acceleartion without grav')
         plt.title('Acceleration over time')
         plt.legend(loc = 1)
+        #plt.savefig('plot filename')
         plt.show()
         
         currentVelX = []
@@ -100,6 +101,7 @@ class integration_and_plot:
         plt.ylabel('velocity in xyz')
         plt.title('Velocity over time')
         plt.legend(loc =1)
+        #plt.savefig('plot filename')
         plt.show()
         
         currentPosX = []
@@ -118,6 +120,7 @@ class integration_and_plot:
         plt.ylabel('position in xyz')
         plt.title('Position over time.')
         plt.legend(loc = 1)
+        #plt.savefig('plot filename')
         plt.show()
         
         """at this point, we have the new 3D animation code.
