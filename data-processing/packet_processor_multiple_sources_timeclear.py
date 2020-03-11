@@ -78,9 +78,9 @@ class packet_processor:
         packetsCombined = np.zeros(3)
 
         for i in range(len(accPacketsTogether)):
-            accPackets.append( [int( int(accPacketsTogether[i][0]) - int(accPacketsTogether[0][0]) ), np.array([float(accPacketsTogether[i][1]), float(accPacketsTogether[i][2]), float(accPacketsTogether[i][3] ) ]) ])
+            accPackets.append( [int( int(accPacketsTogether[i][0]) - int(accPacketsTogether[0][0]) ), np.array([float(accPacketsTogether[i][1]), float(accPacketsTogether[i][2]), float(accPacketsTogether[i][3] ) ], dtype=float) ])
         for i in range(len(gravPacketsTogether)):
-            gravPackets.append( [int( int(gravPacketsTogether[i][0]) - int(accPacketsTogether[0][0]) ), np.array([float(gravPacketsTogether[i][1]), float(gravPacketsTogether[i][2]), float(gravPacketsTogether[i][3] ) ]) ])
+            gravPackets.append( [int( int(gravPacketsTogether[i][0]) - int(accPacketsTogether[0][0]) ), np.array([float(gravPacketsTogether[i][1]), float(gravPacketsTogether[i][2]), float(gravPacketsTogether[i][3] ) ], dtype=float) ])
 
         for i in range(len(accPackets)):
             try:

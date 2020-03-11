@@ -4,6 +4,7 @@ import mpl_toolkits.mplot3d.axes3d as p3
 from matplotlib import animation
 import copy
 
+
 class integration_and_plot:
     """
     This class will have two functions. First will sync all the grav data and acc data. 
@@ -21,36 +22,38 @@ class integration_and_plot:
         
         gravMaster = copy.deepcopy(self.inputData[0])
         accMaster = copy.deepcopy(self.inputData[1])
+        
         """
         currently we are seeing different lengths of accMaster and gravMaster, which SHOULD NOT BE ALLOWED, if they have been processed through grav sync.
         Is this the multiple packet error, or something similar? (multiple packet error in packet_processor)
-        print(len(accMaster))
-        print(len(gravMaster))
         """
         for i in range(len(accMaster)):
             accWithoutGrav.append(accMaster[i][1] - gravMaster[i][1])
             #soure for correct np array!! https://stackoverflow.com/a/48343452
         
         velocityVector = []
-        postionVector = []
+        positionVector = []
         
         timesOfAcc = []
         
         for i in range(len(accMaster)):
-            timesOfAcc.append( accMaster[i][0]/1000 )
+            timesOfAcc.append(accMaster[i][0] / 1000)
+        
         
         tempVelocity = np.zeros(3)
         for i in range(len(accWithoutGrav) - 1):
-            tempVelocity = tempVelocity + (accWithoutGrav[i+1] + accWithoutGrav[i])*(timesOfAcc[i+1] - timesOfAcc[i])*0.5
+            tempVelocity = tempVelocity + (accWithoutGrav[i+1] + accWithoutGrav[i]) * (timesOfAcc[i+1] - timesOfAcc[i]) * 0.5
             velocityVector.append(tempVelocity)
+        
+         
         
         timesOfVel = copy.deepcopy(timesOfAcc)
         timesOfVel.pop(0)
-            
+
         tempPosition = np.zeros(3)
         for i in range(len(velocityVector) - 1):
             tempPosition = tempPosition + (velocityVector[i+1] + velocityVector[i])*(timesOfVel[i+1] - timesOfVel[i])*0.5
-            postionVector.append(tempPosition)
+            positionVector.append(tempPosition)
         
         timesOfPos = copy.deepcopy(timesOfVel)
         timesOfPos.pop(0)
@@ -58,31 +61,36 @@ class integration_and_plot:
         self.timesOfPos = timesOfPos
         self.timesOfVel = timesOfVel
         self.timesOfAcc = timesOfAcc
-        self.accWithoutGrav = accWithoutGrav
+        self.accelerationVector = accWithoutGrav
         self.velocityVector = velocityVector
-        self.postionVector = postionVector
+        self.positionVector = positionVector
         
         #source for calling variables: https://stackoverflow.com/a/10139935
 
-    def plotting(self):
-        
+    def plotting(self, fileNameForSaving):
+        # source for increasing the font size, default font size is 10: https://stackoverflow.com/a/3900167
+        plt.rcParams.update({'font.size': 11})
+
         currentAccX = []
         currentAccY = []
         currentAccZ = []
+
+        for i in range(len(self.accelerationVector)):
+            currentAccX.append(self.accelerationVector[i][0])
+            currentAccY.append(self.accelerationVector[i][1])
+            currentAccZ.append(self.accelerationVector[i][2])
         
-        for i in range(len(self.accWithoutGrav)):
-            currentAccX.append(self.accWithoutGrav[i][0])
-            currentAccY.append(self.accWithoutGrav[i][1])
-            currentAccZ.append(self.accWithoutGrav[i][2])
-            
-        plt.plot(self.timesOfAcc, currentAccX, '-', label = 'x acceleration')
-        plt.plot(self.timesOfAcc, currentAccY, '-', label = 'y acceleration')
-        plt.plot(self.timesOfAcc, currentAccZ, '-', label = 'z acceleration')
-        plt.xlabel('time')
-        plt.ylabel('acceleartion without grav')
-        plt.title('Acceleration over time')
-        plt.legend(loc = 1)
-        #plt.savefig('plot filename')
+        #This line of code, if activated for a stationary data file, this will print the mean acceleration of the file. 
+        #This can be used to find the bias acceleration for the inertial measurement unit.
+        #print('The mean of the acceleration data is (in order of X,Y,Z):\n%f\n%f\n%f'%(np.mean(currentAccX), np.mean(currentAccY), np.mean(currentAccZ) ))
+
+        plt.plot(self.timesOfAcc, currentAccX, '-', label = 'X Acceleration')
+        plt.plot(self.timesOfAcc, currentAccY, '-', label = 'Y Acceleration')
+        plt.plot(self.timesOfAcc, currentAccZ, '-', label = 'Z Acceleration')
+        plt.xlabel('Time (s)')
+        plt.ylabel('Linear Acceleration (ms$^{-2}$)')
+        plt.legend(loc = 2)
+        plt.savefig("%s_acceleration.jpg"%(fileNameForSaving), bbox_inches='tight')
         plt.show()
         
         currentVelX = []
@@ -94,35 +102,50 @@ class integration_and_plot:
             currentVelY.append(self.velocityVector[i][1])
             currentVelZ.append(self.velocityVector[i][2])
             
-        plt.plot(self.timesOfVel, currentVelX, '-', label = 'x velocity')
-        plt.plot(self.timesOfVel, currentVelY, '-', label = 'y velocity')
-        plt.plot(self.timesOfVel, currentVelZ, '-', label = 'z velocity')
-        plt.xlabel('time')
-        plt.ylabel('velocity in xyz')
-        plt.title('Velocity over time')
-        plt.legend(loc =1)
-        #plt.savefig('plot filename')
+        plt.plot(self.timesOfVel, currentVelX, '-', label = 'X Velocity')
+        plt.plot(self.timesOfVel, currentVelY, '-', label = 'Y Velocity')
+        plt.plot(self.timesOfVel, currentVelZ, '-', label = 'Z Velocity')
+        plt.xlabel('Time (s)')
+        plt.ylabel('Velocity (ms$^{-1}$)')
+        plt.legend(loc = 2)
+        plt.savefig("%s_velocity.jpg"%(fileNameForSaving), bbox_inches='tight')
         plt.show()
         
         currentPosX = []
         currentPosY = []
         currentPosZ = []
         
-        for i in range(len(self.postionVector)):
-            currentPosX.append(self.postionVector[i][0])
-            currentPosY.append(self.postionVector[i][1])
-            currentPosZ.append(self.postionVector[i][2])
-            
-        plt.plot(self.timesOfPos, currentPosX, '-', label = 'x position')
-        plt.plot(self.timesOfPos, currentPosY, '-', label = 'y position')
-        plt.plot(self.timesOfPos, currentPosZ, '-', label = 'z position')
-        plt.xlabel('time')
-        plt.ylabel('position in xyz')
-        plt.title('Position over time.')
-        plt.legend(loc = 1)
-        #plt.savefig('plot filename')
+        for i in range(len(self.positionVector)):
+            currentPosX.append(self.positionVector[i][0])
+            currentPosY.append(self.positionVector[i][1])
+            currentPosZ.append(self.positionVector[i][2])
+
+        plt.plot(self.timesOfPos, currentPosX, '-', label = 'X Position')
+        plt.plot(self.timesOfPos, currentPosY, '-', label = 'Y Position')
+        plt.plot(self.timesOfPos, currentPosZ, '-', label = 'Z Position')
+        plt.xlabel('Time (s)')
+        plt.ylabel('Position (m)')
+        plt.legend(loc = 2)
+        plt.savefig("%s_position.jpg"%(fileNameForSaving), bbox_inches='tight')
         plt.show()
+    
         
+        # the following section of code will generate a 2d plot of position in x vs position in y.
+        # It also contains a dummy plot, which will instead return the final magnitude of position 
+        # of the sensor (since we won't be showing corner test diagrams). If we want to add corner
+        # test diagrams, these won't really work, maybe instead calculate the difference in displacement?
+        plt.plot(currentPosX, currentPosY, '-')
+        # dummy plot
+        plt.plot([], [], ' ', label="Overall movement: %sm"%(np.around(
+            np.sqrt(currentPosX[-1] * currentPosX[-1] + currentPosY[-1] * currentPosY[-1])
+            , decimals=2)))
+        plt.legend(frameon=False)
+        plt.xlabel('Position over time in x (m)')
+        plt.ylabel('Position over time in y (m)')
+        plt.savefig("%s_2d_position.jpg"%(fileNameForSaving), bbox_inches='tight')
+        plt.show()
+
+
         """at this point, we have the new 3D animation code.
         This has been cobbled together from various sources, but
         mainly from matplotlibanimator.py, after using matplotlibanimator_3.py 
@@ -188,3 +211,6 @@ class integration_and_plot:
         If you want to find out which codecs are available then run ffmpeg -codec in the terminal. 
         Given that you want to use ffmpeg as the writer. 
         """
+
+        
+

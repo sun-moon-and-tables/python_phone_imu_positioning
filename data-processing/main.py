@@ -1,4 +1,5 @@
 import numpy as np
+import os
 from packet_processor_multiple_sources_timeclear import packet_processor
 from single_source_grav_sync import single_data_source_sync
 from multiple_source_grav_sync import multi_data_source_sync 
@@ -32,6 +33,8 @@ allData = []
 for file in listOfFilesToBeProcessed:
     data = np.load("Processed--%s.npy"%(file), allow_pickle=True)
     allData.append(data)
+    os.remove("Processed--%s.npy"%(file))
+
 
 #explanation for allow_pickle = True: https://github.com/tensorflow/tensorflow/issues/28102
 if len(listOfFilesToBeProcessed) == 1:
@@ -44,7 +47,7 @@ else:
 
 #printing and returning data source: https://stackoverflow.com/a/7664904
 plot.integration()
-plot.plotting()
+plot.plotting(listOfFilesToBeProcessed[0])
 
 
 
